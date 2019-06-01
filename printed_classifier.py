@@ -23,7 +23,7 @@ import numpy as np
 from keras.models import Sequential, load_model
 from keras.utils import to_categorical
 import pandas as pd
-
+import sys
 
 
 # function to preprocess the image
@@ -42,7 +42,7 @@ def extract_letters(filename):
     borders = np.logical_xor(bw, cleared)
     label_image[borders] = -1
 
-    print label_image.max()
+    # print label_image.max()
 
     # fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(7, 7))
     # ax.imshow(bw, cmap='jet')
@@ -111,16 +111,6 @@ def extract_letters(filename):
 
     letter_train = np.empty_like(final)
     letter_train[:] = final
-
-    # plt.imshow(final[0],cmap=cm.Greys_r,aspect='equal')
-    # print(final[0].shape)
-    #
-    # plt.ylabel('Length')
-    # plt.xlabel('Width')
-    # plt.show()
-
-
-
 
     return letter_train;
 
@@ -338,14 +328,14 @@ train = train/255.
 test = test.reshape(-1,20,20,1)
 test = test/255.
 
-print(trainA.shape)
-print(targetA.shape)
-
-print(targetA)
-
-print(trainA2.shape)
-print(targetA2.shape)
-
+# print(trainA.shape)
+# print(targetA.shape)
+#
+# print(targetA)
+#
+# print(trainA2.shape)
+# print(targetA2.shape)
+#
 
 def create_model2():
     model = Sequential()
@@ -391,7 +381,7 @@ plot_model(model, to_file='model.png')
 model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 # model2.compile(optimizer=opt2, loss='categorical_crossentropy', metrics=['accuracy'])
 
-history = model.fit(train, train_target,validation_data=(test, test_target), epochs=5, batch_size=20)
+history = model.fit(train, train_target,validation_data=(test, test_target), epochs=3, batch_size=20)
 # history2 = model2.fit(train, train_target,validation_data=(test, test_target), epochs=4, batch_size=20)
 
 model.save('printed_recogniser.h5')
@@ -416,19 +406,18 @@ plt.legend(['Train', 'Test'], loc='upper left')
 plt.show()
 
 model = load_model('printed_recogniser.h5')
-folder_string = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabdefghnqrt'
 folder_string = 'abcdefghijklmnopqrstuvwxyzABDEFGHNQRT'
 
 
-im = extract_letters('ocr/testing/shazam.png')
-fr = np.empty_like(im)
+image_sample = extract_letters(str(sys.argv[1]))
+fr = np.empty_like(image_sample)
 
-fr[::] = im
+fr[::] = image_sample
 
 fr = fr.reshape(-1,20,20,1)
 fr = fr/255.
 
-ans = list()
+predictions_list = list()
 
 for i in range(len(fr)):
     prediction = model.predict(fr)[i]
@@ -437,12 +426,12 @@ for i in range(len(fr)):
     answer_confidence = prediction[most_conf_index]
 
     print("Model classified image as", str(folder_string[most_conf_index]), "with", answer_confidence,"confidence")
-    ans.append(folder_string[most_conf_index])
+    predictions_list.append(folder_string[most_conf_index])
 
 
 
 
-print(ans)
+print(predictions_list)
 
 
 # display the letter A image
